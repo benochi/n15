@@ -8,12 +8,13 @@ A lightweight, modern Next.js 15 template designed for building full-stack appli
 
 - Built with Next.js 15 (App Router).
 - TypeScript for type safety.
-- Tailwind CSS for styling.
+- Tailwind 4.0 _Beta_ CSS for styling. which will be upgraded to LTS
 - Mongoose for MongoDB integration.
 - OAuth support for Google, GitHub, Facebook, and Twitter.
 - TanStack Query for API data fetching and caching.
 - Authentication via JWT and secure password hashing.
 - Example setup for Mailgun and Stripe integrations.
+- ShadCN is desired but has issues with the beta changes for TW 4.0 at this time.
 
 ---
 
