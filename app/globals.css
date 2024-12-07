@@ -1,21 +1,39 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  --font-base: "Inter", sans-serif;
+  --font-special-1: "Comic Sans MS", cursive;
+  --color-primary: #4f46e5;
+  --color-background: #ffffff;
+  --color-foreground: #000000;
+  --color-dark-background: #1a1a1a;
+  --color-dark-foreground: #f2f2f2;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  html {
+    font-family: var(--font-base); /* Global font */
   }
 }
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+@utility shadow-sm {
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
+
+@utility shadow-md {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+@utility shadow-lg {
+  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.15);
+}
+
+@utility shadow-xl {
+  box-shadow: 0 20px 25px rgba(0, 0, 0, 0.2);
+}
+
+.special-font1 {
+  font-family: var(--font-special-1);
+}
+
+@variant supports-blur (&:where([data-blur="true"] *));
