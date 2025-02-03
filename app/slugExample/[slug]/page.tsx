@@ -1,10 +1,24 @@
-import { exampleItems } from "../exampleData";
+import { notFound } from "next/navigation";
+import slugify from "slugify";
 
-export default function SlugPage({ params }: { params: { slug: string } }) {
-  const item = exampleItems.find((item) => item.slug === params.slug);
+// Normally, you wouldn't import static data like this.
+// Instead, you'd fetch data from a database or API.
+import { exampleItems, ExampleItem } from "../exampleData";
+
+export default async function SlugPage({ params }: { params: { slug: string } }) {
+  // 🔹 Normally, you would fetch data from a database here:
+  // Example:
+  // const res = await fetch(`https://your-api.com/items/${params.slug}`);
+  // const item = await res.json();
+  // if (!item) { notFound(); }
+
+  // Instead of fetching, we are using static example data for demonstration.
+  const item = exampleItems.find(
+    (item: ExampleItem) => slugify(item.name, { lower: true }) === params.slug
+  );
 
   if (!item) {
-    return <h1 className="text-red-500">404 - Item Not Found</h1>;
+    notFound();
   }
 
   return (
