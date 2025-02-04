@@ -55,28 +55,39 @@ export async function GET(req: Request) {
   }
 }
 
-// POST: Register a new user if not using clerk you can do this. 
-// export async function POST(req: Request) {
-//   await dbConnect()
-//   const body = await req.json() 
-//   const parsedBody = userSchema.safeParse(body)
+// POST: Register a new user (Clerk Integrated)
+export async function POST(req: Request) {
+  await dbConnect();
 
-//   if (!parsedBody.success){
-//     return errorResponse(parsedBody.error.format(), 400)
-//   }
+  // Get the authenticated user from Clerk
+  const clerkUser = await currentUser();
+  if (!clerkUser) return errorResponse("Unauthorized", 401);
 
-//   try {
-//     const { email } = parsedBody.data;
-//     const existingUser = await User.findOne({ email });
-//     if (existingUser) return errorResponse("User with this email already exists", 400);
+  try {
+    // Check if user already exists in MongoDB
+    const existingUser = await User.findOne({ clerkId: clerkUser.id });
+    if (existingUser) return errorResponse("User already exists", 400);
 
-//     const newUser = await User.create(parsedBody.data);
-    
-//     return NextResponse.json(newUser, { status: 201 });
-//   } catch(error) {
-//     return errorResponse("Failed to register user", 500)
-//   }
-// }
+    // Prepare user data (email is already verified by Clerk)
+    const newUserData = {
+      clerkId: clerkUser.id,
+      email: clerkUser.emailAddresses[0].emailAddress, // Clerk ensures unique emails
+      name: clerkUser.firstName || "Unnamed",
+      role: "user", // Default role
+    };
+
+    // Validate with Zod
+    const parsedBody = userSchema.safeParse(newUserData);
+    if (!parsedBody.success) return errorResponse(parsedBody.error.format(), 400);
+
+    // Create user in MongoDB
+    const newUser = await User.create(parsedBody.data);
+
+    return NextResponse.json(newUser, { status: 201 });
+  } catch (error) {
+    return errorResponse("Failed to register user", 500);
+  }
+}
 
 // PATCH: Update a user - Users can update themselves, Admins can update any user
 export async function PATCH(req: Request) {
