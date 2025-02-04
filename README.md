@@ -27,7 +27,7 @@ A lightweight, modern Next.js 15 template designed for building full-stack appli
 
 - **Node.js** (18+)
 - **Bun** (optional, for faster installs, recommended)
-- A MongoDB database (local or cloud-hosted, e.g., MongoDB Atlas)
+- **MongoDB** (optional, local or cloud-hosted, e.g., MongoDB Atlas)
 
 ### Installation
 
@@ -36,6 +36,26 @@ A lightweight, modern Next.js 15 template designed for building full-stack appli
    git clone https://github.com/benochi/n15.git
    cd n15
    ```
+
+## Package setup instructions:
+ ### **MongoDB Setup**
+
+This boilerplate includes MongoDB integration using **Mongoose**. Follow these steps to configure it:
+
+1. **Set up MongoDB Atlas (or a local MongoDB instance)**:
+   - Go to **[MongoDB Atlas](https://www.mongodb.com/atlas/database)**
+   - Create a **free cluster**.
+   - In **Database Access**, create a new user with **read/write** access.
+   - Under **Network Access**, allow connections from **your IP or 0.0.0.0/0** (for development).
+   - Copy your **MongoDB connection string**.
+
+2. **Update `.env.local` with your MongoDB credentials**:
+   MONGO_URI_DEV=your_mongo_dev_str
+   MONGO_URI_TEST=your_mongo_test_str
+   MONGO_URI_PROD=your_mongo_prod_str
+
+3. **dbConnect.test.ts**:
+   Ensure your DB connection works by running ```bun test```
 
 ## Contributing
 
@@ -64,6 +84,7 @@ We welcome contributions to this project! Please follow these best practices to 
 
    - Test your changes thoroughly before submitting a pull request.
    - Include tests where applicable.
+   - Test files go in the same directory as the files they're testing when possible.
 
 4. **Pull Requests**:
 
