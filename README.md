@@ -38,7 +38,7 @@ A lightweight, modern Next.js 15 template designed for building full-stack appli
    ```
 
 ## Package setup instructions:
- ### **MongoDB Setup**
+### **MongoDB Setup**
 
 This boilerplate includes MongoDB integration using **Mongoose**. Follow these steps to configure it:
 
@@ -56,6 +56,8 @@ This boilerplate includes MongoDB integration using **Mongoose**. Follow these s
 
 3. **dbConnect.test.ts**:
    Ensure your DB connection works by running ```bun test```
+   
+### **Clerk setup**
 
 ## Contributing
 
