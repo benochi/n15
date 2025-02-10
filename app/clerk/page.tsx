@@ -4,9 +4,12 @@ export default async function Clerk(){
   const user = await currentUser()
   const userFirstName: string | null | undefined = user?.firstName
 
-  //To get a current users id use the auth function
+  //** To get a current users id use the auth function
   // const { userId } = auth()
-  // const exampleApiCall = await apiCallName(userId!)
+  // if (!userId) {
+  //   throw new Error("User is not authenticated");
+  // }
+  // const exampleApiCall = await apiCallName(userId)
 
   const name: string = userFirstName ?? "No name found."
   //can uncomment out the <pre> tag to see all user data you can render. 
