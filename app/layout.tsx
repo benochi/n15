@@ -22,6 +22,7 @@ export default function RootLayout({
           <SignedIn>
             <UserButton showName/>
           </SignedIn>
+          {/* Providers are for tanstack */}
           <Providers>
             {children}
           </Providers>
