@@ -6,15 +6,18 @@ A lightweight, modern Next.js 15 template designed for building full-stack appli
 
 ## Features
 
-- Built with Next.js 15 (App Router).
-- TypeScript for type safety.
-- Tailwind 4.0 _Beta_ CSS for styling. which will be upgraded to LTS
-- Mongoose for MongoDB integration.
-- OAuth support for Google, GitHub, Facebook, and Twitter.
-- TanStack Query for API data fetching and caching.
-- Authentication via JWT and secure password hashing.
-- Example setup for Mailgun and Stripe integrations.
-- ShadCN is desired but has issues with the beta changes for TW 4.0 at this time.
+- **Built with Next.js 15 (App Router).**
+- **TypeScript** for type safety.
+- **Tailwind CSS 4.0.3** for styling.
+- **Mongoose** for MongoDB integration.
+- **OAuth & Authentication** using **Clerk** (Google, GitHub, Email/Password support).
+- **TanStack Query** for API data fetching and caching.
+- **Mailgun API** for email notifications.
+- **Stripe API** for subscription payments & one-time purchases.
+- **Cloudflare R2** for cost-efficient file/image storage.
+- **Google APIs** for potential integrations (Maps, Calendar, etc.).
+- **React Hook Form + Zod** for validation & form management.
+- **ShadCN is desired** but has issues with **Tailwind 4.X** at this time.
 
 ---
 
@@ -24,7 +27,7 @@ A lightweight, modern Next.js 15 template designed for building full-stack appli
 
 - **Node.js** (18+)
 - **Bun** (optional, for faster installs, recommended)
-- A MongoDB database (local or cloud-hosted, e.g., MongoDB Atlas)
+- **MongoDB** (optional, local or cloud-hosted, e.g., MongoDB Atlas)
 
 ### Installation
 
@@ -33,6 +36,37 @@ A lightweight, modern Next.js 15 template designed for building full-stack appli
    git clone https://github.com/benochi/n15.git
    cd n15
    ```
+
+## Package setup instructions:
+### **MongoDB Setup**
+
+This boilerplate includes MongoDB integration using **Mongoose**. Follow these steps to configure it:
+
+1. **Set up MongoDB Atlas (or a local MongoDB instance)**:
+   - Go to **[MongoDB Atlas](https://www.mongodb.com/atlas/database)**
+   - Create a **free cluster**.
+   - In **Database Access**, create a new user with **read/write** access.
+   - Under **Network Access**, allow connections from **your IP or 0.0.0.0/0** (for development).
+   - Copy your **MongoDB connection string**.
+
+2. **Update `.env.local` with your MongoDB credentials**:
+   MONGO_URI_DEV=your_mongo_dev_str
+   MONGO_URI_TEST=your_mongo_test_str
+   MONGO_URI_PROD=your_mongo_prod_str
+
+3. **dbConnect.test.ts**:
+   Ensure your DB connection works by running ```bun test```
+   
+### **Clerk setup**
+
+   - Sign up for Clerk at **clerk.com**
+   - Create a clerk application.
+   - Copy your clerk API keys from the clerk dashboard.
+   - Update .env.local with your Clerk credentials.
+   - Set up Clerk Middleware (middleware.ts) to handle authentication.
+   - Add public or private routes as desired, see clerk route for userID/api example.
+   - Add Sign-In & Sign-Up Routes with catch all, as provided.
+   - Wrap the App with ClerkProvider in layout.tsx
 
 ## Contributing
 
@@ -61,6 +95,7 @@ We welcome contributions to this project! Please follow these best practices to 
 
    - Test your changes thoroughly before submitting a pull request.
    - Include tests where applicable.
+   - Test files go in the same directory as the files they're testing when possible.
 
 4. **Pull Requests**:
 
