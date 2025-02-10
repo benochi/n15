@@ -3,13 +3,11 @@ import dbConnect from "@/app/lib/dbConnect"
 import User, { IUser } from "@/app/models/User"
 import { currentUser } from "@clerk/nextjs/server";
 import { userSchema, userIdSchema } from "../../schemas/UserSchema";
-import { querySchema } from "../../schemas/QuerySchema"
-import { z } from "zod";
 import { errorResponse } from "@/app/utils/errorResponse";
 
 type RequestWithJSON = Request & {json: () => Promise<any>}
 
-//GET all users
+//GET the users data
 export async function GET(req: Request): Promise<NextResponse> {
   await dbConnect();
 
@@ -18,56 +16,13 @@ export async function GET(req: Request): Promise<NextResponse> {
   if (!authenticatedUser || !authenticatedUser.id) return errorResponse("Unauthorized", 401);
 
   // Fetch user from MongoDB
-  const user = await User.findOne({ clerkId: authenticatedUser.id }).select("role");
+  const user: IUser | null = await User.findOne({ clerkId: authenticatedUser.id }).select("-__v");
   if (!user) return errorResponse("User not found", 404);
 
-  // If not an admin, return only their own data
-  if (user.role !== "admin") {
-    const selfData = await User.findOne({ clerkId: authenticatedUser.id }).select("-__v");
-    return NextResponse.json(selfData);
-  }
-
-  // If admin, allow querying all users
-  const { searchParams } = new URL(req.url);
-  const parsedQuery = querySchema.safeParse(Object.fromEntries(searchParams));
-  if (!parsedQuery.success) return errorResponse(parsedQuery.error.format(), 400);
-
-  const queryData = parsedQuery.data;
-  const query: Record<string, any> = {};
-
-  if (queryData.search && queryData.searchField) {
-    query[queryData.searchField] = new RegExp(queryData.search, "i");
-  }
-
-  if (queryData.filter) {
-    const [key, value] = queryData.filter.split("=");
-    if (key && value) query[key] = value;
-  }
-
-  try {
-    let usersQuery = User.find(query)
-      .sort({ createdAt: queryData.sort === "asc" ? 1 : -1 })
-      .limit(parseInt(queryData.limit ?? "10"))
-      .skip((parseInt(queryData.page ?? "1") - 1) * parseInt(queryData.limit ?? "10"));
-
-    if (queryData.fields) {
-      usersQuery = usersQuery.select(queryData.fields.split(",").join(" "));
-    } else {
-      usersQuery = usersQuery.select("-__v");
-    }
-
-    const users = await usersQuery;
-    let totalCount: number | undefined;
-
-    if (queryData.includeCount === "true") {
-      totalCount = await User.countDocuments(query);
-    }
-
-    return NextResponse.json({ users, totalCount });
-  } catch (error) {
-    return errorResponse("Failed to fetch users", 500);
-  }
+  // Return only the current user's data
+  return NextResponse.json(user);
 }
+
 
 
 // POST: Register a new user we don't need this because of clerk,
@@ -81,7 +36,7 @@ export async function GET(req: Request): Promise<NextResponse> {
 
 //   try {
 //     // Check if user already exists in MongoDB
-//     const existingUser = await User.findOne({ clerkId: clerkUser.id });
+//     const existingUser: IUser | null = await User.findOne({ clerkId: clerkUser.id });
 //     if (existingUser) return errorResponse("User already exists", 400);
 
 //     // Prepare user data (email is already verified by Clerk)
@@ -127,7 +82,7 @@ export async function PATCH(req: RequestWithJSON): Promise<NextResponse> {
     }
 
     // Find the authenticated user in MongoDB
-    const authenticatedUserRecord = await User.findOne({ clerkId: authenticatedUserId });
+    const authenticatedUserRecord: IUser | null = await User.findOne({ clerkId: authenticatedUserId });
     if (!authenticatedUserRecord) return errorResponse("Authenticated user not found", 404);
 
     // Ensure only the user themselves or an admin can update
@@ -137,7 +92,7 @@ export async function PATCH(req: RequestWithJSON): Promise<NextResponse> {
     
 
     // Perform update
-    const updatedUser = await User.findOneAndUpdate(
+    const updatedUser: IUser | null = await User.findOneAndUpdate(
       { clerkId: authenticatedUserId },
       { $set: updateFields },
       { new: true, runValidators: true }
@@ -167,10 +122,12 @@ export async function DELETE(req: RequestWithJSON): Promise<NextResponse>{
 
     const {userId} = parsedBody.data;
     
-    const authenticatedUserRecord = await User.findOne({ clerkId: authenticatedUserId });
+    const [authenticatedUserRecord, userToDelete]: (IUser | null)[] = await Promise.all([
+      User.findOne({ clerkId: authenticatedUserId }),
+      User.findOne({ clerkId: userId }),
+    ]);
+    
     if (!authenticatedUserRecord) return errorResponse("User not found", 404);
-
-    const userToDelete = await User.findOne({ clerkId: userId });
     if (!userToDelete) return errorResponse("User to delete not found", 404);
 
     if (authenticatedUserRecord.role !== "admin" && authenticatedUserRecord.clerkId !== userId) {
