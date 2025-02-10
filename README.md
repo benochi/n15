@@ -59,6 +59,15 @@ This boilerplate includes MongoDB integration using **Mongoose**. Follow these s
    
 ### **Clerk setup**
 
+   - Sign up for Clerk at **clerk.com**
+   - Create a clerk application.
+   - Copy your clerk API keys from the clerk dashboard.
+   - Update .env.local with your Clerk credentials.
+   - Set up Clerk Middleware (middleware.ts) to handle authentication.
+   - Add public or private routes as desired, see clerk route for userID/api example.
+   - Add Sign-In & Sign-Up Routes with catch all, as provided.
+   - Wrap the App with ClerkProvider in layout.tsx
+
 ## Contributing
 
 We welcome contributions to this project! Please follow these best practices to ensure a smooth and collaborative workflow.
