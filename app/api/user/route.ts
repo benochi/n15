@@ -12,13 +12,26 @@ type RequestWithJSON = Request & {json: () => Promise<any>}
 //GET all users
 export async function GET(req: Request): Promise<NextResponse> {
   await dbConnect();
-  const { searchParams } = new URL(req.url);
 
-  // Parse query parameters (handle different structure of URLSearchParams)
+  // Authenticate user
+  const authenticatedUser = await currentUser();
+  if (!authenticatedUser || !authenticatedUser.id) return errorResponse("Unauthorized", 401);
+
+  // Fetch user from MongoDB
+  const user = await User.findOne({ clerkId: authenticatedUser.id }).select("role");
+  if (!user) return errorResponse("User not found", 404);
+
+  // If not an admin, return only their own data
+  if (user.role !== "admin") {
+    const selfData = await User.findOne({ clerkId: authenticatedUser.id }).select("-__v");
+    return NextResponse.json(selfData);
+  }
+
+  // If admin, allow querying all users
+  const { searchParams } = new URL(req.url);
   const parsedQuery = querySchema.safeParse(Object.fromEntries(searchParams));
   if (!parsedQuery.success) return errorResponse(parsedQuery.error.format(), 400);
 
-  // Dynamically extract only provided fields from query
   const queryData = parsedQuery.data;
   const query: Record<string, any> = {};
 
@@ -56,45 +69,47 @@ export async function GET(req: Request): Promise<NextResponse> {
   }
 }
 
-// POST: Register a new user (Clerk Integrated)
-export async function POST(req: RequestWithJSON): Promise<NextResponse> {
-  await dbConnect();
 
-  // Get the authenticated user from Clerk
-  const clerkUser = await currentUser();
-  if (!clerkUser) return errorResponse("Unauthorized", 401);
+// POST: Register a new user we don't need this because of clerk,
+// we just need to update info with a patch, but for info sake i left it in.
+// export async function POST(req: RequestWithJSON): Promise<NextResponse> {
+//   await dbConnect();
 
-  try {
-    // Check if user already exists in MongoDB
-    const existingUser = await User.findOne({ clerkId: clerkUser.id });
-    if (existingUser) return errorResponse("User already exists", 400);
+//   // Get the authenticated user from Clerk
+//   const clerkUser = await currentUser();
+//   if (!clerkUser) return errorResponse("Unauthorized", 401);
 
-    // Prepare user data (email is already verified by Clerk)
-    const newUserData: z.infer<typeof userSchema> = {
-      clerkId: clerkUser.id,
-      email: clerkUser.emailAddresses[0].emailAddress, // Clerk ensures unique emails
-      name: clerkUser.firstName || "Unnamed",
-      role: "user", // Default role
-    };
+//   try {
+//     // Check if user already exists in MongoDB
+//     const existingUser = await User.findOne({ clerkId: clerkUser.id });
+//     if (existingUser) return errorResponse("User already exists", 400);
 
-    // Validate with Zod
-    const parsedBody = userSchema.safeParse(newUserData);
-    if (!parsedBody.success) return errorResponse(parsedBody.error.format(), 400);
+//     // Prepare user data (email is already verified by Clerk)
+//     const newUserData: z.infer<typeof userSchema> = {
+//       clerkId: clerkUser.id,
+//       email: clerkUser.emailAddresses[0].emailAddress, // Clerk ensures unique emails
+//       name: clerkUser.firstName || "Unnamed",
+//       role: "user", // Default role
+//     };
 
-    // Create user in MongoDB
-    const newUser = await User.create(parsedBody.data);
+//     // Validate with Zod
+//     const parsedBody = userSchema.safeParse(newUserData);
+//     if (!parsedBody.success) return errorResponse(parsedBody.error.format(), 400);
 
-    return NextResponse.json(newUser, { status: 201 });
-  } catch (error) {
-    return errorResponse("Failed to register user", 500);
-  }
-}
+//     // Create user in MongoDB
+//     const newUser = await User.create(parsedBody.data);
+
+//     return NextResponse.json(newUser, { status: 201 });
+//   } catch (error) {
+//     return errorResponse("Failed to register user", 500);
+//   }
+// }
 
 // PATCH: Update a user - Users can update themselves, Admins can update any user
 export async function PATCH(req: RequestWithJSON): Promise<NextResponse> {
   await dbConnect();
 
-  // Authenticate user with Clerk
+  // Authenticate user with Clerk 
   const authenticatedUser = await currentUser();
   if (!authenticatedUser || !authenticatedUser.id) return errorResponse("Unauthorized", 401);
   const authenticatedUserId = authenticatedUser.id;
@@ -105,10 +120,10 @@ export async function PATCH(req: RequestWithJSON): Promise<NextResponse> {
 
     if (!parsedBody.success) return errorResponse(parsedBody.error.format(), 400);
 
-    const { clerkId, ...updateFields } = parsedBody.data; // Use clerkId instead of userId
+    const updateFields = parsedBody.data; 
 
-    if ("clerkId" in updateFields) { //don't let users attack clerkId.
-      delete updateFields.clerkId;
+    if ("clerkId" in updateFields) {
+      delete updateFields.clerkId; // Prevent users from modifying their Clerk ID
     }
 
     // Find the authenticated user in MongoDB
@@ -116,13 +131,14 @@ export async function PATCH(req: RequestWithJSON): Promise<NextResponse> {
     if (!authenticatedUserRecord) return errorResponse("Authenticated user not found", 404);
 
     // Ensure only the user themselves or an admin can update
-    if (authenticatedUserRecord.role !== "admin" && authenticatedUserRecord.clerkId !== clerkId) {
+    if (authenticatedUserRecord.role !== "admin" && authenticatedUserRecord.clerkId !== authenticatedUserId) {
       return errorResponse("Forbidden: You can only update your own profile", 403);
     }
+    
 
     // Perform update
     const updatedUser = await User.findOneAndUpdate(
-      { clerkId },
+      { clerkId: authenticatedUserId },
       { $set: updateFields },
       { new: true, runValidators: true }
     );
