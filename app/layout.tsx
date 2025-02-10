@@ -15,6 +15,12 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang="en">
         <body className="min-h-screen bg-background text-foreground">
+          <SignedOut>
+            <SignInButton />
+          </SignedOut>
+          <SignedIn>
+            <UserButton showName/>
+          </SignedIn>
           {children}
         </body>
       </html>
