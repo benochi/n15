@@ -1,15 +1,16 @@
 import { NextResponse } from "next/server"
 import dbConnect from "@/app/lib/dbConnect"
-import User from "@/app/models/User"
+import User, { IUser } from "@/app/models/User"
 import { currentUser } from "@clerk/nextjs/server";
 import { userSchema, userIdSchema } from "../../schemas/UserSchema";
 import { querySchema } from "../../schemas/QuerySchema"
 import { z } from "zod";
 import { errorResponse } from "@/app/utils/errorResponse";
-import { error } from "console";
+
+type RequestWithJSON = Request & {json: () => Promise<any>}
 
 //GET all users
-export async function GET(req: Request) {
+export async function GET(req: Request): Promise<NextResponse> {
   await dbConnect();
   const { searchParams } = new URL(req.url);
 
@@ -43,7 +44,7 @@ export async function GET(req: Request) {
     }
 
     const users = await usersQuery;
-    let totalCount = undefined;
+    let totalCount: number | undefined;
 
     if (queryData.includeCount === "true") {
       totalCount = await User.countDocuments(query);
@@ -56,7 +57,7 @@ export async function GET(req: Request) {
 }
 
 // POST: Register a new user (Clerk Integrated)
-export async function POST(req: Request) {
+export async function POST(req: RequestWithJSON): Promise<NextResponse> {
   await dbConnect();
 
   // Get the authenticated user from Clerk
@@ -69,7 +70,7 @@ export async function POST(req: Request) {
     if (existingUser) return errorResponse("User already exists", 400);
 
     // Prepare user data (email is already verified by Clerk)
-    const newUserData = {
+    const newUserData: z.infer<typeof userSchema> = {
       clerkId: clerkUser.id,
       email: clerkUser.emailAddresses[0].emailAddress, // Clerk ensures unique emails
       name: clerkUser.firstName || "Unnamed",
@@ -90,21 +91,25 @@ export async function POST(req: Request) {
 }
 
 // PATCH: Update a user - Users can update themselves, Admins can update any user
-export async function PATCH(req: Request) {
+export async function PATCH(req: RequestWithJSON): Promise<NextResponse> {
   await dbConnect();
 
   // Authenticate user with Clerk
   const authenticatedUser = await currentUser();
-  if (!authenticatedUser) return errorResponse("Unauthorized", 401);
+  if (!authenticatedUser || !authenticatedUser.id) return errorResponse("Unauthorized", 401);
   const authenticatedUserId = authenticatedUser.id;
 
   try {
-    const body = await req.json();
+    const body: unknown = await req.json();
     const parsedBody = userSchema.partial().safeParse(body); // Allow partial updates
 
     if (!parsedBody.success) return errorResponse(parsedBody.error.format(), 400);
 
     const { clerkId, ...updateFields } = parsedBody.data; // Use clerkId instead of userId
+
+    if ("clerkId" in updateFields) { //don't let users attack clerkId.
+      delete updateFields.clerkId;
+    }
 
     // Find the authenticated user in MongoDB
     const authenticatedUserRecord = await User.findOne({ clerkId: authenticatedUserId });
@@ -131,7 +136,7 @@ export async function PATCH(req: Request) {
 }
 
 // Delete a user - admins can delete any, users can only delete themselves. 
-export async function DELETE(req: Request){
+export async function DELETE(req: RequestWithJSON): Promise<NextResponse>{
   await dbConnect()
 
   //authenticate user with Clerk
@@ -140,19 +145,19 @@ export async function DELETE(req: Request){
   const authenticatedUserId = authenticatedUser.id;
 
   try {
-    const body = await req.json()
+    const body = await req.json() as unknown;
     const parsedBody = userIdSchema.safeParse(body);
     if(!parsedBody.success) return errorResponse(parsedBody.error.format(), 400)
 
     const {userId} = parsedBody.data;
-    const authenticatedUser = await User.findOne({ clerkId: authenticatedUserId })
-
-    if (!authenticatedUser) return errorResponse("User not found", 404);
+    
+    const authenticatedUserRecord = await User.findOne({ clerkId: authenticatedUserId });
+    if (!authenticatedUserRecord) return errorResponse("User not found", 404);
 
     const userToDelete = await User.findOne({ clerkId: userId });
     if (!userToDelete) return errorResponse("User to delete not found", 404);
 
-    if (authenticatedUser.role !== "admin" && authenticatedUser.clerkId !== userId) {
+    if (authenticatedUserRecord.role !== "admin" && authenticatedUserRecord.clerkId !== userId) {
       return errorResponse("Forbidden: You can only delete your own account", 403);
     }
 
