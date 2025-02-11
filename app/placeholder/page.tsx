@@ -22,7 +22,7 @@ export default function Placeholder() {
   const { data, isLoading, error } = useQuery<Todo, Error>({
     queryKey: ["todos", queryId],
     queryFn: getTodos,
-    enabled: triggerFetch && queryId > 0,
+    enabled: triggerFetch && queryId > 0, //lets us use conditional fetching
   });
 
   const handleFetchClick = () => {
