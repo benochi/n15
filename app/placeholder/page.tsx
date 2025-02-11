@@ -15,11 +15,6 @@ export default function Placeholder() {
   const [queryId, setQueryId] = useState<number>(1);
   const [triggerFetch, setTriggerFetch] = useState<boolean>(false);
 
-  const getTodos = async (): Promise<Todo> => {
-    const response = await axios.get(`https://jsonplaceholder.typicode.com/todos/${queryId}`);
-    return response.data;
-  };
-
   const { data, isLoading, error } = useQuery<Todo, Error>({
     queryKey: ["todos", queryId],
     queryFn: () => getTodo(queryId), //Use your API function here.
@@ -59,11 +54,11 @@ export default function Placeholder() {
           <h2 className="text-xl font-semibold text-color-primary">Todo: {data.title}</h2>
           <p className="text-gray-700">Status: {data.completed ? "Completed" : "Not Completed"}</p>
         </div>
-      ) : !data ? (
+      ) : (
         <div className="mt-6 p-4 border border-black rounded-lg shadow-lg bg-color-background">
           <h2 className="text-xl font-semibold text-color-primary">No Data</h2>
         </div>
-      ) : null}
+      )}
     </div>
   );
 }
