@@ -3,7 +3,7 @@ import dbConnect from "@/app/lib/dbConnect"
 import User, { IUser } from "@/app/models/User"
 import { currentUser } from "@clerk/nextjs/server";
 import { userSchema, userIdSchema } from "../../schemas/UserSchema";
-import { errorResponse } from "@/app/utils/errorResponse";
+import { errorResponse } from "@/utils/errorResponse";
 
 type RequestWithJSON = Request & {json: () => Promise<any>}
 

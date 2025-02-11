@@ -1,7 +1,7 @@
 "use client";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { getTodo } from "../utils/todoApis/api";
+import { getTodo } from "@/utils/todoApis/api";
 import { Todo } from "@/types/todo";
 
 export default function Placeholder() {
