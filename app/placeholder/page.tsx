@@ -2,6 +2,7 @@
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { useState } from "react";
+import { getTodo } from "../utils/todoApis/api";
 
 interface Todo {
   id: number;
@@ -21,7 +22,7 @@ export default function Placeholder() {
 
   const { data, isLoading, error } = useQuery<Todo, Error>({
     queryKey: ["todos", queryId],
-    queryFn: getTodos,
+    queryFn: () => getTodo(queryId), //Use your API function here.
     enabled: triggerFetch && queryId > 0, //lets us use conditional fetching
   });
 
