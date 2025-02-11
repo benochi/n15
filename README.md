@@ -77,7 +77,7 @@ This boilerplate includes MongoDB integration using **Mongoose**. Follow these s
    - useQueryARG1 - if using dynamic keys like id: ["todos", id] id is needed for caching the query
    - useQueryARG2 - queryFn(API call) - IE: getTodos -> queryFn: getTodos - no parenthesis
    - many options IE: button onClick={() => refetch()} etc. 
-   - example use in app/dashboard/page.tsx
+   - example use in app/dashboard/page.tsx and app/placeholder/page.tsx
    - Please refer to docs for all options of useQuery
 
 ## Contributing
