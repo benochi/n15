@@ -72,10 +72,12 @@ This boilerplate includes MongoDB integration using **Mongoose**. Follow these s
    - Set up queryClient in app/providers.tsx
    - Wrap App inside of Layout.tsx with the provider 
    [text](https://tanstack.com/query/latest/docs/framework/react/reference/useQuery)
-   - useQuery hook ie const { data, isPending, etc... } = useQuery({arg1, arg2}) - 1 object arg
-   - useQueryARG1 - queryKey(array) - refetching and caching unique key. ie ['todos']
+   - useQuery hook ie const { data, isPending, error, etc... } = useQuery({arg1, arg2}) - 1 object arg
+   - useQueryARG1 - queryKey(array) - refetching and caching unique key. ie ['todos'] 
+   - useQueryARG1 - if using dynamic keys like id: ["todos", id] id is needed for caching the query
    - useQueryARG2 - queryFn(API call) - IE: getTodos -> queryFn: getTodos - no parenthesis
    - many options IE: button onClick={() => refetch()} etc. 
+   - example use in app/dashboard/page.tsx
    - Please refer to docs for all options of useQuery
 
 ## Contributing
