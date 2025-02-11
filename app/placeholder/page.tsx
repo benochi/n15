@@ -1,14 +1,8 @@
 "use client";
 import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
 import { useState } from "react";
 import { getTodo } from "../utils/todoApis/api";
-
-interface Todo {
-  id: number;
-  title: string;
-  completed: boolean;
-}
+import { Todo } from "@/types/todo";
 
 export default function Placeholder() {
   const [inputId, setInputId] = useState<number | "">(1);
