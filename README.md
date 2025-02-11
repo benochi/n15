@@ -75,6 +75,7 @@ This boilerplate includes MongoDB integration using **Mongoose**. Follow these s
    - useQuery hook ie const { data, isPending, etc... } = useQuery({arg1, arg2}) - 1 object arg
    - useQueryARG1 - queryKey(array) - refetching and caching unique key. ie ['todos']
    - useQueryARG2 - queryFn(API call) - IE: getTodos -> queryFn: getTodos - no parenthesis
+   - many options IE: button onClick={() => refetch()} etc. 
    - Please refer to docs for all options of useQuery
 
 ## Contributing
