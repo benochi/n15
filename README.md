@@ -59,7 +59,7 @@ This boilerplate includes MongoDB integration using **Mongoose**. Follow these s
    
 ### **Clerk setup**
 
-   - Sign up for Clerk at **clerk.com**
+   - Sign up for Clerk at **https://www.clerk.com**
    - Create a clerk application.
    - Copy your clerk API keys from the clerk dashboard.
    - Update .env.local with your Clerk credentials.
@@ -67,6 +67,14 @@ This boilerplate includes MongoDB integration using **Mongoose**. Follow these s
    - Add public or private routes as desired, see clerk route for userID/api example.
    - Add Sign-In & Sign-Up Routes with catch all, as provided.
    - Wrap the App with ClerkProvider in layout.tsx
+
+### **Tanstack setup**
+   - Set up queryClient in app/providers.tsx
+   - Wrap App inside of Layout.tsx with the provider 
+   [text](https://tanstack.com/query/latest/docs/framework/react/reference/useQuery)
+   - useQuery hook ie const query = useQuery(arg1, arg2) - 1 object arg,
+   - useQueryARG1 - queryKey(array) - refetching and caching unique key. ie ['todos']
+   - useQueryARG2 - queryFn(API call) - IE: getTodos -> queryFn: getTodos - no parenthesis
 
 ## Contributing
 
