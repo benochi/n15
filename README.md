@@ -71,7 +71,7 @@ This boilerplate includes MongoDB integration using **Mongoose**. Follow these s
 ### **Tanstack setup**
    - Set up queryClient in app/providers.tsx
    - Wrap App inside of Layout.tsx with the provider 
-   [text](https://tanstack.com/query/latest/docs/framework/react/reference/useQuery)
+   - [Tanstack](https://tanstack.com/query/latest/docs/framework/react/reference/useQuery)
    - useQuery hook ie const { data, isPending, error, etc... } = useQuery({arg1, arg2}) - 1 object arg
    - useQueryARG1 - queryKey(array) - refetching and caching unique key. ie ['todos'] 
    - useQueryARG1 - if using dynamic keys like id: ["todos", id] id is needed for caching the query
@@ -80,6 +80,16 @@ This boilerplate includes MongoDB integration using **Mongoose**. Follow these s
    - example use in app/dashboard/page.tsx and app/placeholder/page.tsx
    - FE api logic can be found in utils/
    - Please refer to docs for all options of useQuery
+
+### **Mailgun setup**
+ - FE app/mailgun/page.tsx, types/email.ts, utils/mailgun/api.ts
+ - BE app/api/mailgun/route.ts
+ - components/emailForm.tsx
+ - sign up for mailgun: [Mailgun](https://www.mailgun.com/)
+ - Add API key -> .env.local: MAILGUN_API_KEY
+ - Add Domain on Mailgun, and set up dns keys with your hosting provider(AWS, GoDaddy, etc)
+ - Verify keys on Mailgun and add domain to .env.local: MAILGUN_DOMAIN=mail.example.com
+ 
 
 ## Contributing
 
