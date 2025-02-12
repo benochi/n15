@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import dbConnect from "@/app/lib/dbConnect";
-import User, { IUser } from "@/app/models/User";
+import User, { IUser } from "@/models/User";
 import { currentUser } from "@clerk/nextjs/server";
-import { querySchema } from "../../../../schemas/QuerySchema";
+import { querySchema } from "../../../../../schemas/QuerySchema";
 import { errorResponse } from "@/utils/errorResponse";
 
 export async function GET(req: Request): Promise<NextResponse> {

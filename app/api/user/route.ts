@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server"
 import dbConnect from "@/app/lib/dbConnect"
-import User, { IUser } from "@/app/models/User"
+import User, { IUser } from "@/models/User"
 import { currentUser } from "@clerk/nextjs/server";
-import { userSchema, userIdSchema } from "../../schemas/UserSchema";
+import { userSchema, userIdSchema } from "../../../schemas/UserSchema";
 import { errorResponse } from "@/utils/errorResponse";
 
 type RequestWithJSON = Request & {json: () => Promise<any>}
