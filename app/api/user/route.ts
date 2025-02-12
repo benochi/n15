@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import dbConnect from "@/app/lib/dbConnect"
+import dbConnect from "@/lib/dbConnect"
 import User, { IUser } from "@/models/User"
 import { currentUser } from "@clerk/nextjs/server";
 import { userSchema, userIdSchema } from "../../../schemas/UserSchema";
