@@ -27,7 +27,7 @@ A lightweight, modern Next.js 15 template designed for building full-stack appli
 
 - **Node.js** (18+)
 - **Bun** (optional, for faster installs, recommended)
-- **MongoDB** (optional, local or cloud-hosted, e.g., MongoDB Atlas)
+
 
 ### Installation
 
@@ -59,7 +59,7 @@ This boilerplate includes MongoDB integration using **Mongoose**. Follow these s
    
 ### **Clerk setup**
 
-   - Sign up for Clerk at **clerk.com**
+   - Sign up for Clerk at **https://www.clerk.com**
    - Create a clerk application.
    - Copy your clerk API keys from the clerk dashboard.
    - Update .env.local with your Clerk credentials.
@@ -67,6 +67,19 @@ This boilerplate includes MongoDB integration using **Mongoose**. Follow these s
    - Add public or private routes as desired, see clerk route for userID/api example.
    - Add Sign-In & Sign-Up Routes with catch all, as provided.
    - Wrap the App with ClerkProvider in layout.tsx
+
+### **Tanstack setup**
+   - Set up queryClient in app/providers.tsx
+   - Wrap App inside of Layout.tsx with the provider 
+   [text](https://tanstack.com/query/latest/docs/framework/react/reference/useQuery)
+   - useQuery hook ie const { data, isPending, error, etc... } = useQuery({arg1, arg2}) - 1 object arg
+   - useQueryARG1 - queryKey(array) - refetching and caching unique key. ie ['todos'] 
+   - useQueryARG1 - if using dynamic keys like id: ["todos", id] id is needed for caching the query
+   - useQueryARG2 - queryFn(API call) - IE: getTodos -> queryFn: getTodos - no parenthesis
+   - many options IE: button onClick={() => refetch()} etc. 
+   - example use in app/dashboard/page.tsx and app/placeholder/page.tsx
+   - FE api logic can be found in utils/
+   - Please refer to docs for all options of useQuery
 
 ## Contributing
 

@@ -1,5 +1,6 @@
 import "./globals.css";
 import { ClerkProvider, SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
+import Providers from "./providers";
 
 export const metadata = {
   title: "Template App",
@@ -21,7 +22,10 @@ export default function RootLayout({
           <SignedIn>
             <UserButton showName/>
           </SignedIn>
-          {children}
+          {/* Providers are for tanstack */}
+          <Providers>
+            {children}
+          </Providers>
         </body>
       </html>
     </ClerkProvider>
