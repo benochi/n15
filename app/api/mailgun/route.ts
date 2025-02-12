@@ -14,8 +14,8 @@ const DOMAIN = process.env.MAILGUN_DOMAIN!;
 
 
 export async function POST(req: Request) {
-  const emailData: EmailData = await req.json();
-
+  const emailData: EmailData = await req.json(); 
+  console.log(emailData)
   try {
     const response = await mailgunClient.messages.create(DOMAIN, {
       to: emailData.to,
