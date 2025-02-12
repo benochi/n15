@@ -4,3 +4,8 @@ export interface EmailData {
   subject: string;
   text: string;
 }
+
+export interface EmailResponse {
+  message: string;
+  status: number;
+}
