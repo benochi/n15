@@ -3,6 +3,8 @@ import { useState } from 'react';
 import { EmailData } from '@/types/email';
 import { useMutation } from '@tanstack/react-query';
 import { sendEmail } from '@/utils/mailgun/api';
+import { emailSchema } from '@/schemas/EmailSchema';
+import { z } from 'zod';
 
 export default function EmailForm() {
   const [emailData, setEmailData] = useState<EmailData>({
@@ -24,6 +26,11 @@ export default function EmailForm() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const result = emailSchema.safeParse(emailData);
+    if (!result.success){
+      console.log(result.error.format())
+      return
+    }
     sendEmailMutation();
   };
 
