@@ -84,7 +84,6 @@ export default function EmailForm() {
         >
           {status === 'pending' ? 'Sending...' : 'Send Email'}
         </button>
-
         {isError && <p className="mt-4 text-red-500">{error?.message}</p>}
         {isSuccess && <p className="mt-4 text-green-500">Email sent successfully!</p>}
       </form>
