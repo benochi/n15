@@ -22,7 +22,7 @@ const Matrix404 = () => {
 
     const alphabet = katakana + latin + nums;
 
-    const fontSize = 16;
+    const fontSize = 20;
     const columns = canvas.width / fontSize;
 
     const rainDrops: number[] = [];
