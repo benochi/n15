@@ -13,6 +13,7 @@ const getMongoUri = (): string => {
       return process.env.MONGODB_URI_DEV || "";
   }
 };
+console.log("MONGODB_URI_DEV:", process.env.MONGODB_URI_DEV);
 
 const MONGODB_URI = getMongoUri();
 

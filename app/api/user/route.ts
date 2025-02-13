@@ -11,13 +11,27 @@ type RequestWithJSON = Request & {json: () => Promise<any>}
 export async function GET(req: Request): Promise<NextResponse> {
   await dbConnect();
 
-  // Authenticate user
+  // Authenticate user with Clerk
   const authenticatedUser = await currentUser();
   if (!authenticatedUser || !authenticatedUser.id) return errorResponse("Unauthorized", 401);
+  const email = authenticatedUser.emailAddresses?.[0]?.emailAddress;
+  
+  if (!email) {
+    return errorResponse("Email address not found", 400);
+  }
+  
+  // Here you can create your user from the clerk ID and store what you want in Mongo
+  let user: IUser | null = await User.findOne({ clerkId: authenticatedUser.id }).select("-__v");
+  if (!user) {
+    const newUser = new User({
+      clerkId: authenticatedUser.id,
+      email: authenticatedUser.emailAddresses[0].emailAddress,
+      name: authenticatedUser.firstName || "Unnamed",
+      role: "user", 
+    });
 
-  // Fetch user from MongoDB
-  const user: IUser | null = await User.findOne({ clerkId: authenticatedUser.id }).select("-__v");
-  if (!user) return errorResponse("User not found", 404);
+    user = await newUser.save();
+  }
 
   // Return only the current user's data
   return NextResponse.json(user);
@@ -75,7 +89,7 @@ export async function PATCH(req: RequestWithJSON): Promise<NextResponse> {
 
     if (!parsedBody.success) return errorResponse(parsedBody.error.format(), 400);
 
-    const updateFields = parsedBody.data; 
+    const updateFields = parsedBody.data;
 
     if ("clerkId" in updateFields) {
       delete updateFields.clerkId; // Prevent users from modifying their Clerk ID
@@ -89,7 +103,6 @@ export async function PATCH(req: RequestWithJSON): Promise<NextResponse> {
     if (authenticatedUserRecord.role !== "admin" && authenticatedUserRecord.clerkId !== authenticatedUserId) {
       return errorResponse("Forbidden: You can only update your own profile", 403);
     }
-    
 
     // Perform update
     const updatedUser: IUser | null = await User.findOneAndUpdate(
@@ -106,11 +119,11 @@ export async function PATCH(req: RequestWithJSON): Promise<NextResponse> {
   }
 }
 
-// Delete a user - admins can delete any, users can only delete themselves. 
-export async function DELETE(req: RequestWithJSON): Promise<NextResponse>{
-  await dbConnect()
+// DELETE a user - admins can delete any, users can only delete themselves.
+export async function DELETE(req: RequestWithJSON): Promise<NextResponse> {
+  await dbConnect();
 
-  //authenticate user with Clerk
+  // Authenticate user with Clerk
   const authenticatedUser = await currentUser();
   if (!authenticatedUser) return errorResponse("Unauthorized", 401);
   const authenticatedUserId = authenticatedUser.id;
@@ -118,15 +131,15 @@ export async function DELETE(req: RequestWithJSON): Promise<NextResponse>{
   try {
     const body = await req.json() as unknown;
     const parsedBody = userIdSchema.safeParse(body);
-    if(!parsedBody.success) return errorResponse(parsedBody.error.format(), 400)
+    if (!parsedBody.success) return errorResponse(parsedBody.error.format(), 400);
 
-    const {userId} = parsedBody.data;
-    
+    const { userId } = parsedBody.data;
+
     const [authenticatedUserRecord, userToDelete]: (IUser | null)[] = await Promise.all([
       User.findOne({ clerkId: authenticatedUserId }),
       User.findOne({ clerkId: userId }),
     ]);
-    
+
     if (!authenticatedUserRecord) return errorResponse("User not found", 404);
     if (!userToDelete) return errorResponse("User to delete not found", 404);
 
@@ -136,7 +149,7 @@ export async function DELETE(req: RequestWithJSON): Promise<NextResponse>{
 
     await User.deleteOne({ clerkId: userId });
     return NextResponse.json({ message: "User deleted successfully" });
-  } catch(error) {
-    return errorResponse("Failed to delete user", 500)
+  } catch (error) {
+    return errorResponse("Failed to delete user", 500);
   }
 }
