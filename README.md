@@ -1,6 +1,6 @@
 # n15 Template
 
-A lightweight, modern Next.js 15 template designed for building full-stack applications. This project supports contributions from the open-source community.
+A Next.js 15 boilerplate template designed for building full-stack applications. This project supports contributions from the open-source community. This is built by Dan at github.com/benochi. This project is licensed under the MIT License - see the [LICENSE](./LICENSE) file for details. 
 
 ---
 
@@ -18,6 +18,7 @@ A lightweight, modern Next.js 15 template designed for building full-stack appli
 - **Google APIs** for potential integrations (Maps, Calendar, etc.).
 - **React Hook Form + Zod** for validation & form management.
 - **ShadCN is desired** but has issues with **Tailwind 4.X** at this time.
+- **Vitest** for testing
 
 ---
 
@@ -35,7 +36,14 @@ A lightweight, modern Next.js 15 template designed for building full-stack appli
    ```bash
    git clone https://github.com/benochi/n15.git
    cd n15
+   bun install
+   bun run dev
    ```
+2. Optional:
+   bun run test (update package.json scripts: { "test": "bun test"} if you prefer npm)
+   You can also use npm install if you don't want ot use bun. 
+   Remove/modify anything you want.
+   
 
 ## Package setup instructions:
 ### **MongoDB Setup**
@@ -94,7 +102,7 @@ This boilerplate includes MongoDB integration using **Mongoose**. Follow these s
 
 ## Contributing
 
-We welcome contributions to this project! Please follow these best practices to ensure a smooth and collaborative workflow.
+I welcome contributions to this project! Please follow these best practices to ensure a smooth and collaborative workflow.
 
 ### Best Practices
 
@@ -147,4 +155,4 @@ We welcome contributions to this project! Please follow these best practices to 
 
 ### Thank You for Contributing!
 
-Your contributions help make this project better and more useful for everyone. We appreciate your effort and collaboration!
+Your contributions help make this project better and more useful for everyone. I appreciate your effort and collaboration!
