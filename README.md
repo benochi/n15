@@ -50,9 +50,9 @@ This boilerplate includes MongoDB integration using **Mongoose**. Follow these s
    - Copy your **MongoDB connection string**.
 
 2. **Update `.env.local` with your MongoDB credentials**:
-   MONGO_URI_DEV=your_mongo_dev_str
-   MONGO_URI_TEST=your_mongo_test_str
-   MONGO_URI_PROD=your_mongo_prod_str
+   MONGODB_URI_DEV=your_mongo_dev_str
+   MONGODB_URI_TEST=your_mongo_test_str
+   MONGODB_URI_PROD=your_mongo_prod_str
 
 3. **dbConnect.test.ts**:
    Ensure your DB connection works by running ```bun test```
@@ -67,6 +67,7 @@ This boilerplate includes MongoDB integration using **Mongoose**. Follow these s
    - Add public or private routes as desired, see clerk route for userID/api example.
    - Add Sign-In & Sign-Up Routes with catch all, as provided.
    - Wrap the App with ClerkProvider in layout.tsx
+   - This boilerplate currently uses a GET /api/users route to fill in user data to the DB
 
 ### **Tanstack setup**
    - Set up queryClient in app/providers.tsx
