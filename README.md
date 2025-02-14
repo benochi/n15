@@ -99,6 +99,14 @@ This boilerplate includes MongoDB integration using **Mongoose**. Follow these s
  - Add Domain on Mailgun, and set up dns keys with your hosting provider(AWS, GoDaddy, etc)
  - Verify keys on Mailgun and add domain to .env.local: MAILGUN_DOMAIN=mail.example.com
  
+### **Stripe setup**
+- packages: stripe @stripe/react-stripe-js @stripe/stripe-js
+- Go to stripe dashboard: [Stripe](https://www.stripe.com/)
+- Click to copy your publishable key (the key will have pk_test or pk_live)
+- Update NEXT_PUBLIC_STRIPE_PUBLIC_KEY=Your-PUBLIC-key
+- update your STRIPE_SECRET_KEY
+- check app/stripe/page.tsx for demo and update as needed for your needs.
+- If using /stripe page update options prop to match your needs. 
 
 ## Contributing
 
