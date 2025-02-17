@@ -26,7 +26,7 @@ export default function Stripe(){
               currency: "usd",
             }}
           >
-            <CheckoutPage amount={amount} />
+            <CheckoutPage amount={amount} clientSecret={clientSecret}/>
           </Elements>
         </div>
       </div>
