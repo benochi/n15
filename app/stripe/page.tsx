@@ -18,15 +18,15 @@ export default function Stripe(){
         <h1 className="text-2xl font-bold text-center text-gray-800 mb-4">Stripe Payment Page</h1>
         <p className="text-lg text-center text-gray-600 mb-6">User has requested a payment of <span className="font-semibold text-blue-600">${amount}</span></p>
         <div className="text-center">
-          <Elements 
+          <Elements  //Must wrap the checkOut page to handle stripe
             stripe={stripePromise}
             options={{
               mode: "payment",
-              amount: convertToSubcurrency(amount), //will take dollars to cents
+              amount: convertToSubcurrency(amount), //will convert dollars to cents stripe uses cents
               currency: "usd",
             }}
           >
-            <CheckoutPage amount={amount} clientSecret={clientSecret}/>
+            <CheckoutPage amount={amount} clientSecret={clientSecret} /> 
           </Elements>
         </div>
       </div>

@@ -9,9 +9,10 @@ import convertToSubcurrency from "@/lib/convertToSubcurrency";
 import { CheckoutPageProps } from "@/schemas/CheckoutPage";
 import { useForm, Controller } from "react-hook-form";
 
-export default function CheckoutPage({amount: number) {
+export default function CheckoutPage({amount} :{ amount: number}) {
   const stripe = useStripe();
   const elements = useElements();
+  
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [clientSecret, setClientSecret] = useState("")
   const [loading, setLoading] = useState(false);
