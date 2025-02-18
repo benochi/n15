@@ -9,33 +9,40 @@ type RequestWithJSON = Request & {json: () => Promise<any>}
 
 //GET the users data
 export async function GET(req: Request): Promise<NextResponse> {
-  await dbConnect();
+  try {
+    await dbConnect();
 
-  // Authenticate user with Clerk
-  const authenticatedUser = await currentUser();
-  if (!authenticatedUser || !authenticatedUser.id) return errorResponse("Unauthorized", 401);
-  const email = authenticatedUser.emailAddresses?.[0]?.emailAddress;
-  
-  if (!email) {
-    return errorResponse("Email address not found", 400);
+    // Authenticate user with Clerk
+    const authenticatedUser = await currentUser();
+    if (!authenticatedUser || !authenticatedUser.id) {
+      return errorResponse("Unauthorized", 401);
+    }
+
+    const email = authenticatedUser.emailAddresses?.[0]?.emailAddress;
+    if (!email) {
+      return errorResponse("Email address not found", 400);
+    }
+
+    // Find or create the user in MongoDB
+    let user: IUser | null = await User.findOne({ clerkId: authenticatedUser.id }).select("-__v");
+    if (!user) {
+      const newUser = new User({
+        clerkId: authenticatedUser.id,
+        email: authenticatedUser.emailAddresses[0].emailAddress,
+        name: authenticatedUser.firstName || "Unnamed",
+        role: "user",
+      });
+
+      user = await newUser.save();
+    }
+
+    return NextResponse.json(user);
+  } catch (error) {
+    console.error("Error in GET /user:", error);
+    return errorResponse("Internal Server Error", 500);
   }
-  
-  // Here you can create your user from the clerk ID and store what you want in Mongo
-  let user: IUser | null = await User.findOne({ clerkId: authenticatedUser.id }).select("-__v");
-  if (!user) {
-    const newUser = new User({
-      clerkId: authenticatedUser.id,
-      email: authenticatedUser.emailAddresses[0].emailAddress,
-      name: authenticatedUser.firstName || "Unnamed",
-      role: "user", 
-    });
-
-    user = await newUser.save();
-  }
-
-  // Return only the current user's data
-  return NextResponse.json(user);
 }
+
 
 
 
@@ -76,80 +83,100 @@ export async function GET(req: Request): Promise<NextResponse> {
 
 // PATCH: Update a user - Users can update themselves, Admins can update any user
 export async function PATCH(req: RequestWithJSON): Promise<NextResponse> {
-  await dbConnect();
-
-  // Authenticate user with Clerk 
-  const authenticatedUser = await currentUser();
-  if (!authenticatedUser || !authenticatedUser.id) return errorResponse("Unauthorized", 401);
-  const authenticatedUserId = authenticatedUser.id;
-
   try {
-    const body: unknown = await req.json();
-    const parsedBody = userSchema.partial().safeParse(body); // Allow partial updates
+    await dbConnect();
 
-    if (!parsedBody.success) return errorResponse(parsedBody.error.format(), 400);
+    // Authenticate user with Clerk
+    const authenticatedUser = await currentUser();
+    if (!authenticatedUser || !authenticatedUser.id) return errorResponse("Unauthorized", 401);
+    const authenticatedUserId = authenticatedUser.id;
 
-    const updateFields = parsedBody.data;
+    try {
+      const body: unknown = await req.json();
+      const parsedBody = userSchema.partial().safeParse(body); // Allow partial updates
 
-    if ("clerkId" in updateFields) {
-      delete updateFields.clerkId; // Prevent users from modifying their Clerk ID
+      if (!parsedBody.success) return errorResponse(parsedBody.error.format(), 400);
+
+      const updateFields = parsedBody.data;
+
+      if ("clerkId" in updateFields) {
+        delete updateFields.clerkId; // Prevent users from modifying their Clerk ID
+      }
+
+      // Find the authenticated user in MongoDB
+      const authenticatedUserRecord: IUser | null = await User.findOne({ clerkId: authenticatedUserId });
+      if (!authenticatedUserRecord) return errorResponse("Authenticated user not found", 404);
+
+      // Ensure only the user themselves or an admin can update
+      if (authenticatedUserRecord.role !== "admin" && authenticatedUserRecord.clerkId !== authenticatedUserId) {
+        return errorResponse("Forbidden: You can only update your own profile", 403);
+      }
+
+      // Perform update
+      const updatedUser: IUser | null = await User.findOneAndUpdate(
+        { clerkId: authenticatedUserId },
+        { $set: updateFields },
+        { new: true, runValidators: true }
+      );
+
+      if (!updatedUser) return errorResponse("User not found", 404);
+
+      return NextResponse.json(updatedUser);
+    } catch (error) {
+      console.error("Parsing/Validation error:", error);
+      return errorResponse("Invalid request body", 400);
     }
-
-    // Find the authenticated user in MongoDB
-    const authenticatedUserRecord: IUser | null = await User.findOne({ clerkId: authenticatedUserId });
-    if (!authenticatedUserRecord) return errorResponse("Authenticated user not found", 404);
-
-    // Ensure only the user themselves or an admin can update
-    if (authenticatedUserRecord.role !== "admin" && authenticatedUserRecord.clerkId !== authenticatedUserId) {
-      return errorResponse("Forbidden: You can only update your own profile", 403);
-    }
-
-    // Perform update
-    const updatedUser: IUser | null = await User.findOneAndUpdate(
-      { clerkId: authenticatedUserId },
-      { $set: updateFields },
-      { new: true, runValidators: true }
-    );
-
-    if (!updatedUser) return errorResponse("User not found", 404);
-
-    return NextResponse.json(updatedUser);
   } catch (error) {
+    console.error("Unexpected error in PATCH /user:", error);
     return errorResponse("Failed to update user", 500);
   }
 }
 
+
 // DELETE a user - admins can delete any, users can only delete themselves.
 export async function DELETE(req: RequestWithJSON): Promise<NextResponse> {
-  await dbConnect();
-
-  // Authenticate user with Clerk
-  const authenticatedUser = await currentUser();
-  if (!authenticatedUser) return errorResponse("Unauthorized", 401);
-  const authenticatedUserId = authenticatedUser.id;
-
   try {
-    const body = await req.json() as unknown;
-    const parsedBody = userIdSchema.safeParse(body);
-    if (!parsedBody.success) return errorResponse(parsedBody.error.format(), 400);
+    await dbConnect();
 
-    const { userId } = parsedBody.data;
+    // Authenticate user with Clerk
+    const authenticatedUser = await currentUser();
+    if (!authenticatedUser) return errorResponse("Unauthorized", 401);
 
-    const [authenticatedUserRecord, userToDelete]: (IUser | null)[] = await Promise.all([
-      User.findOne({ clerkId: authenticatedUserId }),
-      User.findOne({ clerkId: userId }),
-    ]);
+    const authenticatedUserId = authenticatedUser.id;
 
-    if (!authenticatedUserRecord) return errorResponse("User not found", 404);
-    if (!userToDelete) return errorResponse("User to delete not found", 404);
+    try {
+      const body = await req.json() as unknown;
+      const parsedBody = userIdSchema.safeParse(body);
 
-    if (authenticatedUserRecord.role !== "admin" && authenticatedUserRecord.clerkId !== userId) {
-      return errorResponse("Forbidden: You can only delete your own account", 403);
+      if (!parsedBody.success) {
+        console.error("Validation error:", parsedBody.error.format());
+        return errorResponse(parsedBody.error.format(), 400);
+      }
+
+      const { userId } = parsedBody.data;
+
+      const [authenticatedUserRecord, userToDelete]: (IUser | null)[] = await Promise.all([
+        User.findOne({ clerkId: authenticatedUserId }),
+        User.findOne({ clerkId: userId }),
+      ]);
+
+      if (!authenticatedUserRecord) return errorResponse("User not found", 404);
+      if (!userToDelete) return errorResponse("User to delete not found", 404);
+
+      // Ensure only the user themselves or an admin can delete
+      if (authenticatedUserRecord.role !== "admin" && authenticatedUserRecord.clerkId !== userId) {
+        return errorResponse("Forbidden: You can only delete your own account", 403);
+      }
+
+      await User.deleteOne({ clerkId: userId });
+
+      return NextResponse.json({ message: "User deleted successfully" });
+    } catch (error) {
+      console.error("Validation/Parsing error:", error);
+      return errorResponse("Invalid request body", 400);
     }
-
-    await User.deleteOne({ clerkId: userId });
-    return NextResponse.json({ message: "User deleted successfully" });
   } catch (error) {
+    console.error("Unexpected error in DELETE /user:", error);
     return errorResponse("Failed to delete user", 500);
   }
 }

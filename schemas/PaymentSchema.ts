@@ -6,3 +6,5 @@ export const PaymentSchema = z.object({
   paymentMethodId: z.string().min(1, "Payment method ID is required"),
   userId: z.string().min(1, "User ID is required"),
 })
+
+export type PaymentData = z.infer<typeof PaymentSchema>;
