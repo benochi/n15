@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { EmailData } from '@/types/email';
 import { useMutation } from '@tanstack/react-query';
-import { sendEmail } from '@/utils/mailgun/api';
+import { sendEmail } from '@/lib/mailgun/api';
 import { emailSchema } from '@/schemas/EmailSchema';
 import { z } from 'zod';
 
