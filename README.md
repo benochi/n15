@@ -107,6 +107,7 @@ This boilerplate includes MongoDB integration using **Mongoose**. Follow these s
 - update your STRIPE_SECRET_KEY
 - check app/stripe/page.tsx for demo and update as needed for your needs.
 - If using /stripe page update options prop to match your needs. 
+- files: utils/services/payment.ts, schemas/CheckoutPage.ts, schemas/PaymentSchema, app/stripe/page.tsx, app/api/createPaymentIntent/route.ts, utils/convertToSubcurrency.ts
 
 ## Contributing
 

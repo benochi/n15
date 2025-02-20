@@ -1,6 +1,6 @@
 'use client'
 import CheckoutPage from '@/components/CheckoutPage';
-import convertToSubcurrency from "@/lib/convertToSubcurrency";
+import convertToSubcurrency from "@/utils/convertToSubcurrency";
 import { Elements } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
 
@@ -26,7 +26,7 @@ export default function Stripe(){
               currency: "usd",
             }}
           >
-            <CheckoutPage amount={amount} clientSecret={clientSecret} /> 
+            <CheckoutPage amount={amount} /> 
           </Elements>
         </div>
       </div>
